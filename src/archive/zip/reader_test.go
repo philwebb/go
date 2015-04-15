@@ -83,6 +83,24 @@ var tests = []ZipTest{
 		},
 	},
 	{
+		Name:    "test-prefix-junk.zip",
+		Comment: "This is a zipfile comment.",
+		File: []ZipTestFile{
+			{
+				Name:    "test.txt",
+				Content: []byte("This is a test text file.\n"),
+				Mtime:   "09-05-10 12:12:02",
+				Mode:    0644,
+			},
+			{
+				Name:  "gophercolor16x16.png",
+				File:  "gophercolor16x16.png",
+				Mtime: "09-05-10 15:52:58",
+				Mode:  0644,
+			},
+		},
+	},
+	{
 		Name:   "r.zip",
 		Source: returnRecursiveZip,
 		File: []ZipTestFile{
@@ -235,6 +253,11 @@ var tests = []ZipTest{
 				Mode:    0644,
 			},
 		},
+	},
+	{
+		Name: "zip64-prefix-junk.zip",
+		Error: ErrFormat, // We can't support prefix data since the Zip64 end 
+		                  // of central directory locator uses a relative offset
 	},
 	// Another zip64 file with different Extras fields. (golang.org/issue/7069)
 	{
@@ -525,7 +548,7 @@ func TestIssue8186(t *testing.T) {
 	}
 	for i, s := range dirEnts {
 		var f File
-		err := readDirectoryHeader(&f, strings.NewReader(s))
+		err := readDirectoryHeader(&f, strings.NewReader(s), 0)
 		if err != nil {
 			t.Errorf("error reading #%d: %v", i, err)
 		}
